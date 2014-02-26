@@ -17,12 +17,13 @@ describe('Album', function(){
     });
   });
 
-  beforeEach(function(){
+  beforeEach(function(done){
     rimraf.sync(__dirname + '/../../app/static/img');
     fs.mkdirSync(__dirname + '/../../app/static/img');
     var origfile = __dirname + '/../fixtures/dungeon-cover.jpg';
     var copyfile = __dirname + '/../fixtures/dungeon-cover-copy.jpg';
     fs.createReadStream(origfile).pipe(fs.createWriteStream(copyfile));
+    global.nss.db.dropDatabase(function(err, result){done();});
   });
 
   describe('new', function(){
@@ -43,7 +44,7 @@ describe('Album', function(){
       var a1 = new Album({title: 'My Lil Dungeon',
                           taken: '03/08/2003',
                           });
-      var oldPath = __dirname + '/../fixtures/dungeon-cover.jpg';
+      var oldPath = __dirname + '/../fixtures/dungeon-cover-copy.jpg';
       a1.addCover(oldPath);
       
       expect(a1).to.be.instanceof(Album);
@@ -51,6 +52,21 @@ describe('Album', function(){
       expect(a1.taken).to.be.instanceof(Date);
       expect(a1.taken).to.deep.equal(new Date('03/08/2003'));
       expect(a1.cover).to.equal(path.normalize(__dirname + '/../../app/static/img/mylildungeon/cover.jpg'));
+    });
+  });
+ 
+  describe('#insert', function(){
+    it('should save a new instance of Album', function(done){
+      var a1 = new Album({title: 'My Lil Dungeon',
+                          taken: '03/08/2003',
+                          });
+      var oldPath = __dirname + '/../fixtures/dungeon-cover-copy.jpg';
+      a1.addCover(oldPath);
+      
+      a1.insert(function(err){
+        expect(a1._id.toString()).to.have.length(24);
+        done();
+      });
     });
   });
 

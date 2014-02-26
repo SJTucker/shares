@@ -2,7 +2,7 @@
 
 module.exports = Album;
 
-//var albums = global.nss.db.collection('albums');
+var albums = global.nss.db.collection('albums');
 //var Mongo = require('mongodb');
 var fs = require('fs');
 var path = require('path');
@@ -27,4 +27,10 @@ Album.prototype.addCover = function(oldPath){
   this.cover = path.normalize(newPath);
   
 
+};
+
+Album.prototype.insert = function(fn){
+  albums.save(this, function(err, record){
+    fn(err);
+  });
 };
